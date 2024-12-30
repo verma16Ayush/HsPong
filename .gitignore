@@ -1,0 +1,40 @@
+# Ignore build artifacts
+dist/
+dist-newstyle/
+cabal.project.local
+cabal.project.local~
+cabal.project.freeze
+*.buildinfo
+*.o
+*.hi
+*.dyn_o
+*.dyn_hi
+*.prof
+*.aux
+*.hp
+*.eventlog
+*.tix
+*.tix.old
+*.tix.new
+*.hpc/
+*.haddock
+
+# Ignore editor/IDE files
+*.swp
+*~
+.idea/
+*.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore binary files
+*.exe
+*.dll
+*.so
+*.dylib
+*.jar
+*.class
