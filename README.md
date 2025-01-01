@@ -1,1 +1,3 @@
-`cabal run` your way to ping pong magnificence. Now functional. Bought to you by Year end loneliness
+`cabal run` your way to ping pong magnificence. Now functional. Brought to you by Year end loneliness
+
+![Screenshot](static/screenshot.png)

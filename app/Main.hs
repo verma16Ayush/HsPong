@@ -18,7 +18,7 @@ backgroundColor = makeColor 0.0 0.0 0.0 0.0
 initialState :: PongGame
 initialState = PongGame {
     ballLoc = (0, 0),
-    ballVelocity = (-40, 20),
+    ballVelocity = (-10, 5),
     player1 = 10,
     player2 = 0,
     ballColor = dark red
