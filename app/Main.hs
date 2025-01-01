@@ -18,7 +18,7 @@ backgroundColor = makeColor 0.0 0.0 0.0 0.0
 initialState :: PongGame
 initialState = PongGame {
     ballLoc = (0, 0),
-    ballVelocity = (3, -40),
+    ballVelocity = (-40, 0),
     player1 = 0,
     player2 = 0,
     ballColor = dark red
@@ -63,19 +63,34 @@ moveBall time game = game { ballLoc = (x_new, y_new)}
         x_new = x_old + vx * time
         y_new = y_old + vy * time
 
-wallBounce :: PongGame -> PongGame
+paddleBounce, wallBounce :: PongGame -> PongGame
 type Radius = Float
 type Position = (Float, Float)
 wallCollision :: Radius -> PongGame -> Bool
--- paddleCollision :: Radius -> PongGame -> Bool
+paddleCollision :: Radius -> PongGame -> Bool
 
--- paddleCollision radius (x, _) game = True
+paddleCollision radius game = leftCollision || rightCollision
+    where
+        (x, y) = ballLoc game
+        p1Height = player1 game
+        p2Height = player2 game
+        paddleWidth = 20
+
+        paddleLeft = -(fromIntegral width / 2) + 2 * paddleWidth
+        paddleRight = fromIntegral width / 2 - 2 * paddleWidth
+
+        withinP1Height = y <= p1Height + 10 && y >= p1Height - 10
+        withinP2Height = y <= p2Height + 10 && y >= p2Height - 10
+
+        leftCollision = x - radius <= paddleLeft && withinP1Height
+        rightCollision = x + radius >= paddleRight && withinP2Height
 
 wallCollision radius game = topCollision || bottomCollision
     where
         (_, y) = ballLoc game
         topCollision = y + radius >= fromIntegral height / 2
         bottomCollision = y - radius <= - (fromIntegral height / 2)
+
 
 wallBounce game = game {ballVelocity = (vx, vy') }
     where
@@ -88,13 +103,16 @@ wallBounce game = game {ballVelocity = (vx, vy') }
                 else
                     vy
 
--- paddleBounde game = game { ballVelocity = (vx', vy) }
---     where
---         radius = 10
---         -- old velocities
---         (vx, vy) = ballVelocity game
---         (x, _) = ballLoc game
---         vx' = if paddleCollision radius (ballLoc game) game
+paddleBounce game = game { ballVelocity = (vx', vy) }
+    where
+        radius = 10
+        -- old velocities
+        (vx, vy) = ballVelocity game
+        vx' = if paddleCollision radius game
+            then
+                -vx
+            else
+                vx
 
 
 fps :: Int
@@ -106,4 +124,4 @@ main :: IO ()
 main = simulate window backgroundColor fps initialState render update
     where
         update :: ViewPort -> Float -> PongGame -> PongGame
-        update _ sec game = wallBounce (moveBall sec game)
+        update _ sec game = paddleBounce (wallBounce (moveBall sec game))
