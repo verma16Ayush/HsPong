@@ -1,7 +1,7 @@
 module Main where
 import Graphics.Gloss
 import Types.PongGame
-import Graphics.Gloss.Data.ViewPort
+import Graphics.Gloss.Interface.Pure.Game (Event (EventKey), Key (Char))
 
 
 width, height, offset :: Int
@@ -18,8 +18,8 @@ backgroundColor = makeColor 0.0 0.0 0.0 0.0
 initialState :: PongGame
 initialState = PongGame {
     ballLoc = (0, 0),
-    ballVelocity = (-40, 0),
-    player1 = 0,
+    ballVelocity = (-40, 20),
+    player1 = 10,
     player2 = 0,
     ballColor = dark red
 }
@@ -118,10 +118,20 @@ paddleBounce game = game { ballVelocity = (vx', vy) }
 fps :: Int
 fps = 60
 
+handleKeys :: Event -> PongGame -> PongGame
+handleKeys (EventKey (Char char) _ _ _) game 
+    | char == 'w' = game {player1 = player1 game + 10}
+    | char == 'a' = game {player1 = player1 game - 10}
+    | char == 'u' = game {player2 = player2 game + 10}
+    | char == 'j' = game {player2 = player2 game - 10}
+    | char == 's' = game {player1 = 0}
+    | char == 'k' = game {player2 = 0}
+
+handleKeys _ game = game
 
 main :: IO ()
 -- main = display window backgroundColor (render initialState)
-main = simulate window backgroundColor fps initialState render update
+main = play window backgroundColor fps initialState render handleKeys update
     where
-        update :: ViewPort -> Float -> PongGame -> PongGame
-        update _ sec game = paddleBounce (wallBounce (moveBall sec game))
+        update :: Float -> PongGame -> PongGame
+        update sec game = paddleBounce (wallBounce (moveBall sec game))
