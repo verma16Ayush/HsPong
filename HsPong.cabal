@@ -50,6 +50,10 @@ extra-doc-files:    CHANGELOG.md
 -- Extra source files to be distributed with the package, such as examples, or a tutorial module.
 -- extra-source-files:
 
+-- library
+--   exposed-modules:     Types
+--   other-modules:       Type
+
 common warnings
     ghc-options: -Wall
 
@@ -61,7 +65,7 @@ executable HsPong
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules: Types.PongGame
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -70,7 +74,7 @@ executable HsPong
     build-depends:    base ^>=4.17.2.1, gloss
 
     -- Directories containing source files.
-    hs-source-dirs:   app
+    hs-source-dirs:   app/
 
     -- Base language which the package is written in.
     default-language: GHC2021

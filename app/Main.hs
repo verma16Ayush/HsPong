@@ -1,5 +1,7 @@
 module Main where
 import Graphics.Gloss
+import Types.PongGame
+import Graphics.Gloss.Data.ViewPort
 
 
 width, height, offset :: Int
@@ -13,12 +15,95 @@ window = InWindow "HsPong" (width, height) (offset, offset)
 backgroundColor :: Color
 backgroundColor = makeColor 0.0 0.0 0.0 0.0
 
-drawing :: Picture
-drawing = pictures 
-        [
-            color (dark red) (circleSolid 30),
-            color (light (light blue)) (rectangleSolid 10 50)
-        ]
+initialState :: PongGame
+initialState = PongGame {
+    ballLoc = (0, 0),
+    ballVelocity = (3, -40),
+    player1 = 0,
+    player2 = 0,
+    ballColor = dark red
+}
+
+render :: PongGame -> Picture
+
+render pongGame = pictures [
+                    ball pongGame,
+                    walls,
+                    mkPaddle (light blue) (-120) (player1 pongGame),
+                    mkPaddle (light green) 120 (player2 pongGame)
+                ]
+                where
+                    ball :: PongGame -> Picture
+                    -- ballColor :: Color
+                    ball game = uncurry translate (ballLoc game) (color (ballColor game) (circleSolid 10))
+                    -- the bounding top and bottom walls
+                    wallColor :: Color
+                    -- takes a float of offset and returns a wall picture
+                    wall :: Float -> Picture
+                    wallColor = greyN 0.5
+                    wall wallOffset =  translate 0 wallOffset (color wallColor (rectangleSolid 240 10))
+                    wallTop = wall 150
+                    wallBottom = wall (-150)
+                    walls = pictures [wallTop, wallBottom]
+
+                    -- make a paddle
+                    mkPaddle :: Color -> Float -> Float -> Picture
+                    mkPaddle col x y = translate x y (color col (rectangleSolid 20 50))
+
+
+moveBall ::
+  Float -> -- ^ time in seconds passed since the start of animation
+  PongGame -> -- ^ initial game state
+  PongGame -- ^ new game state
+
+moveBall time game = game { ballLoc = (x_new, y_new)}
+    where
+        (x_old, y_old) = ballLoc game
+        (vx, vy) = ballVelocity game
+        x_new = x_old + vx * time
+        y_new = y_old + vy * time
+
+wallBounce :: PongGame -> PongGame
+type Radius = Float
+type Position = (Float, Float)
+wallCollision :: Radius -> PongGame -> Bool
+-- paddleCollision :: Radius -> PongGame -> Bool
+
+-- paddleCollision radius (x, _) game = True
+
+wallCollision radius game = topCollision || bottomCollision
+    where
+        (_, y) = ballLoc game
+        topCollision = y + radius >= fromIntegral height / 2
+        bottomCollision = y - radius <= - (fromIntegral height / 2)
+
+wallBounce game = game {ballVelocity = (vx, vy') }
+    where
+        radius = 10
+        -- old velocities
+        (vx, vy) = ballVelocity game
+        vy' = if wallCollision radius game
+                then
+                    -vy
+                else
+                    vy
+
+-- paddleBounde game = game { ballVelocity = (vx', vy) }
+--     where
+--         radius = 10
+--         -- old velocities
+--         (vx, vy) = ballVelocity game
+--         (x, _) = ballLoc game
+--         vx' = if paddleCollision radius (ballLoc game) game
+
+
+fps :: Int
+fps = 60
+
 
 main :: IO ()
-main = display window backgroundColor drawing
+-- main = display window backgroundColor (render initialState)
+main = simulate window backgroundColor fps initialState render update
+    where
+        update :: ViewPort -> Float -> PongGame -> PongGame
+        update _ sec game = wallBounce (moveBall sec game)
