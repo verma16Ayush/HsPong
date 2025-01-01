@@ -1,0 +1,1 @@
+`cabal run` your way to ping pong magnificence. Now functional. Bought to you by Year end loneliness
